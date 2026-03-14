@@ -6,7 +6,6 @@ import '../../../providers/post_carousel_provider.dart';
 import '../../../providers/feed_provider.dart';
 import 'pinch_zoom_overlay.dart';
 
-
 class PostCarousel extends StatefulWidget {
   final List<String> images;
   final int postIndex;
@@ -94,67 +93,76 @@ class _PostCarouselState extends State<PostCarousel> {
 
     if ((screenWidth - (_lastScreenWidth ?? 0)).abs() > 10) {
       _lastScreenWidth = screenWidth;
-   
     }
 
     if (_provider == null || _pageController == null) {
       return const SizedBox.shrink();
     }
 
-    final height = screenWidth * 0.8;
+    return ChangeNotifierProvider.value(
+      value: _provider!,
+      child: Consumer<PostCarouselProvider>(
+        builder: (context, provider, _) {
+          final height = provider.hasComputedSize
+              ? provider.height
+              : screenWidth * 0.8;
 
-    return SizedBox(
-      height: height + (widget.images.length > 1 ? 40 : 0),
-      child: Column(
-        children: [
-          SizedBox(
-            height: height,
-            child: PageView.builder(
-              controller: _pageController,
-              physics: const _FeedFriendlyPagePhysics(),
-              onPageChanged: (page) => context
-                  .read<FeedProvider>()
-                  .setCarouselPosition(widget.postIndex, page),
-              itemCount: widget.images.length,
-              itemBuilder: (context, index) => SizedBox(
-                width: screenWidth,
-                height: height,
-                child: _buildImage(widget.images[index]),
-              ),
-            ),
-          ),
-          if (widget.images.length > 1)
-            Consumer<FeedProvider>(
-              builder: (context, feedProvider, _) {
-                final cur = feedProvider.getCarouselPosition(widget.postIndex);
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(widget.images.length, (i) {
-                      final active = cur == i;
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 2),
-                        width: active ? 7 : 5,
-                        height: active ? 7 : 5,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: active
-                              ? const Color(0xFF3897F0)
-                              : Colors.grey.shade600,
+          return SizedBox(
+            height: height + (widget.images.length > 1 ? 40 : 0),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: height,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    physics: const _FeedFriendlyPagePhysics(),
+                    onPageChanged: (page) => context
+                        .read<FeedProvider>()
+                        .setCarouselPosition(widget.postIndex, page),
+                    itemCount: widget.images.length,
+                    itemBuilder: (context, index) => SizedBox(
+                      width: screenWidth,
+                      height: height,
+                      child: _buildImage(widget.images[index]),
+                    ),
+                  ),
+                ),
+                if (widget.images.length > 1)
+                  Consumer<FeedProvider>(
+                    builder: (context, feedProvider, _) {
+                      final cur = feedProvider.getCarouselPosition(
+                        widget.postIndex,
+                      );
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(widget.images.length, (i) {
+                            final active = cur == i;
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              width: active ? 7 : 5,
+                              height: active ? 7 : 5,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: active
+                                    ? const Color(0xFF3897F0)
+                                    : Colors.grey.shade600,
+                              ),
+                            );
+                          }),
                         ),
                       );
-                    }),
+                    },
                   ),
-                );
-              },
+              ],
             ),
-        ],
+          );
+        },
       ),
     );
   }
 }
-
 
 class _FeedFriendlyPagePhysics extends PageScrollPhysics {
   const _FeedFriendlyPagePhysics()

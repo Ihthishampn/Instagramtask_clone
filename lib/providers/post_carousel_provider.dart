@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'image_size_cache.dart';
 
 class PostCarouselProvider extends ChangeNotifier {
   final List<String> images;
@@ -40,9 +41,21 @@ class PostCarouselProvider extends ChangeNotifier {
 
     if (_isDisposed) return;
 
-    // Use a stable, conservative estimate for carousel height and avoid
-    // re-calculating/resizing later — dynamic resizing while the feed is
-    // being scrolled can cause layout jumps and snapping behavior.
+    // Try to use a cached intrinsic size for the first image (prefetched
+    // during feed load). If available, compute a height from that aspect
+    // ratio so the carousel displays full-height images.
+    final first = images.isNotEmpty ? images.first : null;
+    if (first != null) {
+      final s = ImageSizeCache.instance.get(first);
+      if (s != null && s.width > 0 && s.height > 0) {
+        final proposed = screenWidth * (s.height / s.width);
+        _height = proposed.clamp(200.0, 2000.0);
+        notifyListeners();
+        return;
+      }
+    }
+
+    // Fallback conservative estimate used if no cached size is available.
     _height = (screenWidth * 0.8).clamp(200.0, 500.0);
     notifyListeners();
   }

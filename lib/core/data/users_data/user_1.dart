@@ -17,7 +17,7 @@ UserModel userOne() {
 
           "https://i.pinimg.com/736x/29/d7/86/29d78686ce8eb9fe3956ffe1d81210ba.jpg",
         ],
-        caption: "Finally got my GT. Dream machine.",
+        caption: "Finally got my GT.A dream machine that excites every drive.Speed and style perfectly combined.Every ride feels like a thrilling race.Living the dream, one ride at a time.",
         hashTag: ["#GT", "GT650", "Bike"],
         shareCount: 1200,
         duration: Duration(hours: 3),

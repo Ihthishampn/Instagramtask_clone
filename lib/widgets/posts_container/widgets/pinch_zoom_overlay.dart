@@ -21,6 +21,7 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
 
   OverlayEntry? _entry;
   bool _overlayVisible = false;
+  bool _overlayLock = false; // prevents concurrent insert/remove races
 
   final _zoomNotifier = ValueNotifier<ZoomState>(ZoomState.zero);
 
@@ -32,7 +33,6 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
   Offset? _focalStart;
   ui.Image? _snapshot;
   Timer? _autoDismissTimer;
-
 
   bool _gestureActive = false;
   bool _pendingSnapBack = false;
@@ -87,10 +87,11 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
   }
 
   void _startAutoDismissTimer() {
-    _autoDismissTimer?.cancel();
-    _autoDismissTimer = Timer(const Duration(seconds: 1), () {
-      _dismissImmediately();
-    });
+    // Auto-dismiss intentionally disabled so users can keep the zoom
+    // overlay open indefinitely until they dismiss it manually.
+    // Previously this started a 1s timer; leaving this as a noop
+    // prevents the overlay from auto-closing.
+    return;
   }
 
   void _cancelAutoDismissTimer() {
@@ -111,35 +112,49 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
   }
 
   Future<void> _showOverlay() async {
-    if (_overlayVisible) return;
+    if (_overlayVisible || _overlayLock) return;
+    _overlayLock = true;
 
     final snap = await _capture();
 
-    if (!mounted) return;
-
+    if (!mounted) {
+      _overlayLock = false;
+      snap?.dispose();
+      return;
+    }
 
     if (_pendingSnapBack) {
       _pendingSnapBack = false;
+      _overlayLock = false;
       snap?.dispose();
       return;
     }
 
     if (!_gestureActive) {
+      _overlayLock = false;
       snap?.dispose();
       return;
     }
 
-    if (snap == null) return;
+    if (snap == null) {
+      _overlayLock = false;
+      return;
+    }
 
+    // Dispose previous snapshot and keep reference for later disposal.
     _snapshot?.dispose();
     _snapshot = snap;
     _overlayVisible = true;
     _ctrl.reset();
 
+    // Capture into a local final so the overlay builder doesn't access
+    // the (nullable) field later — prevents null-check errors.
+    final ui.Image snapshotForOverlay = snap;
+
     _entry = OverlayEntry(
       builder: (_) => ZoomOverlayWidget(
         getRect: _liveRect,
-        snapshot: _snapshot!,
+        snapshot: snapshotForOverlay,
         zoomNotifier: _zoomNotifier,
         controller: _ctrl,
         scaleAnim: () => _scaleAnim,
@@ -150,6 +165,7 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
 
     Overlay.of(context).insert(_entry!);
     _startAutoDismissTimer();
+    _overlayLock = false;
   }
 
   void _removeOverlay() {
@@ -198,7 +214,7 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
       );
     }
     _focalStart = d.focalPoint;
-    _showOverlay(); 
+    _showOverlay();
   }
 
   void _onScaleUpdate(ScaleUpdateDetails d) {
@@ -218,7 +234,6 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
     if (_overlayVisible) {
       _snapBack();
     } else {
-
       _pendingSnapBack = true;
     }
   }
@@ -234,7 +249,7 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
           if (n is ScrollStartNotification || n is ScrollUpdateNotification) {
             _dismissImmediately();
           }
-          return false; 
+          return false;
         },
         child: RawGestureDetector(
           behavior: HitTestBehavior.translucent,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:instagram_task_clone/model/feed_post_model.dart';
 import 'package:instagram_task_clone/repositories/post_repository.dart';
+import 'image_size_cache.dart';
 
 class FeedProvider extends ChangeNotifier {
   final PostRepository _repository;
@@ -24,6 +25,18 @@ class FeedProvider extends ChangeNotifier {
     try {
       _feedPosts = await _repository.fetchFeedPosts();
       _carouselPositions.clear();
+      // Prefetch intrinsic sizes for images in the first 20 posts so
+      // carousel heights can be computed before the UI is shown.
+      final urls = <String>[];
+      for (var i = 0; i < _feedPosts.length && i < 20; i++) {
+        final p = _feedPosts[i];
+        for (final u in p.post.image) {
+          if (u.isNotEmpty) urls.add(u);
+        }
+      }
+      if (urls.isNotEmpty) {
+        await ImageSizeCache.instance.prefetch(urls);
+      }
     } catch (_) {
       _feedPosts = [];
       _carouselPositions.clear();
@@ -69,11 +82,9 @@ class FeedProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final morePosts = await _repository
-          .fetchFeedPosts();
+      final morePosts = await _repository.fetchFeedPosts();
       _feedPosts.addAll(morePosts);
-    } catch (_) {
-    }
+    } catch (_) {}
 
     _isLoadingMore = false;
     notifyListeners();
