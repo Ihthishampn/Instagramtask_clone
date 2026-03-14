@@ -9,6 +9,9 @@ import 'package:instagram_task_clone/providers/feed_provider.dart';
 import 'package:instagram_task_clone/model/feed_post_model.dart';
 import 'package:instagram_task_clone/widgets/refresh/instagram_refresh_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:instagram_task_clone/providers/navigation_provider.dart';
+import 'package:instagram_task_clone/widgets/navigation/nav_bar.dart';
+import 'package:instagram_task_clone/screens/tabs/placeholder_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 600;
 
-
     if (isNearBottom != _isNearBottom) {
       _isNearBottom = isNearBottom;
       if (_isNearBottom) {
@@ -49,68 +51,84 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Provide a local NavigationProvider for bottom tabs.
+    return ChangeNotifierProvider(
+      create: (_) => NavigationProvider(),
+      child: Consumer<NavigationProvider>(
+        builder: (context, nav, _) {
+          final idx = nav.currentIndex;
+          return Scaffold(
+            body: SafeArea(child: _buildBodyForIndex(context, idx)),
+            bottomNavigationBar: const InstagramNavBar(),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBodyForIndex(BuildContext context, int idx) {
+    if (idx != 0) {
+      return const PlaceholderTab(title: 'Not completed');
+    }
+
     final double width = MediaQuery.of(context).size.width;
-    return Scaffold(
-      body: SafeArea(
-        child: InstagramRefreshIndicator(
-          onRefresh: () async {
-            await context.read<FeedProvider>().loadFeed();
-          },
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              SliverAppBar(
-                leading: MyIconButton(onpressed: () {}, icon: Icons.add),
-                centerTitle: true,
-                title: Image.asset(
-                  logoImage,
-                  color: MyColors.logo,
-                  width: (width * 0.35).clamp(100, 200),
-                ),
-                actions: [
-                  MyIconButton(
-                    onpressed: () {},
-                    icon: Icons.favorite_border_outlined,
-                  ),
-                ],
-              ),
-
-              // story tab
-              SliverToBoxAdapter(child: StoriesTray()),
-              Selector<FeedProvider, List<FeedPost>>(
-                selector: (context, feed) => feed.feedPosts,
-                builder: (context, feedPosts, _) {
-                  final feed = context.read<FeedProvider>();
-                  if (feed.isLoading) {
-                    return SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) => const PostContainerSkeleton(),
-                        childCount: 5,
-                        addAutomaticKeepAlives: false,
-                      ),
-                    );
-                  }
-
-                  return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final post = feed.feedPosts[index];
-                        return PostContainer(
-                          key: ValueKey(post.post.id),
-                          post: post,
-                          index: index,
-                        );
-                      },
-                      childCount: feed.feedPosts.length,
-                      addAutomaticKeepAlives: false,
-                      addSemanticIndexes: false,
-                    ),
-                  );
-                },
+    return InstagramRefreshIndicator(
+      onRefresh: () async {
+        await context.read<FeedProvider>().loadFeed();
+      },
+      child: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverAppBar(
+            leading: MyIconButton(onpressed: () {}, icon: Icons.add),
+            centerTitle: true,
+            title: Image.asset(
+              logoImage,
+              color: MyColors.logo,
+              width: (width * 0.35).clamp(100, 200),
+            ),
+            actions: [
+              MyIconButton(
+                onpressed: () {},
+                icon: Icons.favorite_border_outlined,
               ),
             ],
           ),
-        ),
+
+          // story tab
+          SliverToBoxAdapter(child: StoriesTray()),
+          Selector<FeedProvider, List<FeedPost>>(
+            selector: (context, feed) => feed.feedPosts,
+            builder: (context, feedPosts, _) {
+              final feed = context.read<FeedProvider>();
+              if (feed.isLoading) {
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => const PostContainerSkeleton(),
+                    childCount: 5,
+                    addAutomaticKeepAlives: false,
+                  ),
+                );
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final post = feed.feedPosts[index];
+                    return PostContainer(
+                      key: ValueKey(post.post.id),
+                      post: post,
+                      index: index,
+                    );
+                  },
+                  childCount: feed.feedPosts.length,
+                  addAutomaticKeepAlives: false,
+                  addSemanticIndexes: false,
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

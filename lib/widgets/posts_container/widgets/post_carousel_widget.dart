@@ -20,7 +20,8 @@ class PostCarousel extends StatefulWidget {
   State<PostCarousel> createState() => _PostCarouselState();
 }
 
-class _PostCarouselState extends State<PostCarousel> {
+class _PostCarouselState extends State<PostCarousel>
+    with SingleTickerProviderStateMixin {
   PostCarouselProvider? _provider;
   PageController? _pageController;
   double? _lastScreenWidth;
@@ -76,7 +77,8 @@ class _PostCarouselState extends State<PostCarousel> {
       key: ValueKey('pinch_zoom_${widget.postIndex}_$url'),
       child: CachedNetworkImage(
         imageUrl: url,
-        fit: BoxFit.cover,
+        fit: BoxFit.fitWidth,
+        alignment: Alignment.center,
         placeholder: (context, url) => Container(color: Colors.black),
         errorWidget: (context, url, error) => Container(
           color: Colors.black,
@@ -107,55 +109,62 @@ class _PostCarouselState extends State<PostCarousel> {
               ? provider.height
               : screenWidth * 0.8;
 
-          return SizedBox(
-            height: height + (widget.images.length > 1 ? 40 : 0),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: height,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    physics: const _FeedFriendlyPagePhysics(),
-                    onPageChanged: (page) => context
-                        .read<FeedProvider>()
-                        .setCarouselPosition(widget.postIndex, page),
-                    itemCount: widget.images.length,
-                    itemBuilder: (context, index) => SizedBox(
-                      width: screenWidth,
-                      height: height,
-                      child: _buildImage(widget.images[index]),
+          return AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: height + (widget.images.length > 1 ? 40 : 0),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: height,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      physics: const _FeedFriendlyPagePhysics(),
+                      onPageChanged: (page) => context
+                          .read<FeedProvider>()
+                          .setCarouselPosition(widget.postIndex, page),
+                      itemCount: widget.images.length,
+                      itemBuilder: (context, index) => SizedBox(
+                        width: screenWidth,
+                        height: height,
+                        child: _buildImage(widget.images[index]),
+                      ),
                     ),
                   ),
-                ),
-                if (widget.images.length > 1)
-                  Consumer<FeedProvider>(
-                    builder: (context, feedProvider, _) {
-                      final cur = feedProvider.getCarouselPosition(
-                        widget.postIndex,
-                      );
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(widget.images.length, (i) {
-                            final active = cur == i;
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 2),
-                              width: active ? 7 : 5,
-                              height: active ? 7 : 5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: active
-                                    ? const Color(0xFF3897F0)
-                                    : Colors.grey.shade600,
-                              ),
-                            );
-                          }),
-                        ),
-                      );
-                    },
-                  ),
-              ],
+                  if (widget.images.length > 1)
+                    Consumer<FeedProvider>(
+                      builder: (context, feedProvider, _) {
+                        final cur = feedProvider.getCarouselPosition(
+                          widget.postIndex,
+                        );
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(widget.images.length, (i) {
+                              final active = cur == i;
+                              return Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
+                                width: active ? 7 : 5,
+                                height: active ? 7 : 5,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: active
+                                      ? const Color(0xFF3897F0)
+                                      : Colors.grey.shade600,
+                                ),
+                              );
+                            }),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
             ),
           );
         },

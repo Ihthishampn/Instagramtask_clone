@@ -35,6 +35,9 @@ class FeedProvider extends ChangeNotifier {
         }
       }
       if (urls.isNotEmpty) {
+        // Ensure intrinsic sizes for the first posts are available before
+        // finishing the initial load so carousels can compute exact heights
+        // and avoid mid-scroll relayouts that crop or jump content.
         await ImageSizeCache.instance.prefetch(urls);
       }
     } catch (_) {
