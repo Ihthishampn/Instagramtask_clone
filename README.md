@@ -32,10 +32,10 @@ Provider is chosen for its simplicity and tight integration with Flutter's widge
 
 ### Key Providers
 
-- **`FeedProvider`** — manages feed posts, carousel positions, and infinite scroll pagination (loads 5 posts per page).
+- **`FeedProvider`** — manages feed posts, carousel positions, and infinite scroll pagination 
 - **`StoriesProvider`** — manages stories list and watched-state tracking.
 - **`PostCarouselProvider`** — per-post carousel state; tracks current page index.
-- **`StoryViewerProvider`** — small provider for the story viewer's current index (keeps state out of local `setState`).
+- **`StoryViewerProvider`** — small provider for the story viewer's current index 
 - **`ToggleChangeProvider`** — manages heart animation state for the like action.
 - **`NavigationProvider`** — manages bottom navigation bar selected index.
 
@@ -155,6 +155,7 @@ lib/
 - **Action Row** — like, comment, share, save; some show toast/snackbar on tap.
 - **More Menu** — bottom sheet with Save, QR Code, Add to Favorites, Unfollow, Why Seeing, Hide, About Account, Report.
 - **Details** — caption (expandable if long), hashtags, timestamp, "See translation" link.
+
 
 ### Image Loading & Memory Management
 
