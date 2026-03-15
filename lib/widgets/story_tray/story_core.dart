@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:instagram_task_clone/model/user_model.dart';
 import '../../core/shared/ui_helpers.dart';
+import '../../providers/story_viewer_provider.dart';
 import 'story_image.dart';
 import 'story_header.dart';
 import 'story_footer.dart';
@@ -71,10 +73,15 @@ class StoryCore extends StatelessWidget {
 
           const _StoryGradients(),
 
-          StoryHeader(
-            progressAnimation: progressController,
-            currentUser: users[currentIndex],
-            formatTime: (d) => formatRelativeTime(d),
+          Consumer<StoryViewerProvider>(
+            builder: (context, viewerProv, _) {
+              final currentIdx = viewerProv.currentIndex;
+              return StoryHeader(
+                progressAnimation: progressController,
+                currentUser: users[currentIdx],
+                formatTime: (d) => formatRelativeTime(d),
+              );
+            },
           ),
 
           Positioned(

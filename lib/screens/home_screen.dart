@@ -5,7 +5,6 @@ import 'package:instagram_task_clone/widgets/posts_container/post/post_container
 import 'package:instagram_task_clone/widgets/story_tray/stories_tray.dart';
 import 'package:instagram_task_clone/providers/feed_provider.dart';
 import 'package:instagram_task_clone/providers/stories_provider.dart';
-import 'package:instagram_task_clone/model/feed_post_model.dart';
 import 'package:instagram_task_clone/widgets/refresh/instagram_refresh_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:instagram_task_clone/providers/navigation_provider.dart';
@@ -72,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
           final metrics = notification.metrics;
-          final isNearBottom = metrics.pixels >= metrics.maxScrollExtent - 600;
+          final isNearBottom = metrics.pixels >= metrics.maxScrollExtent - 1500;
 
           final curMax = metrics.maxScrollExtent;
           if (_lastMaxScrollExtent == null) {
@@ -93,9 +92,14 @@ class _HomeScreenState extends State<HomeScreen> {
           if (isNearBottom != _isNearBottom) {
             _isNearBottom = isNearBottom;
             if (_isNearBottom) {
+              debugPrint(
+                '[HomeScreen] Scroll near bottom detected, loading more posts...',
+              );
               try {
                 context.read<FeedProvider>().loadMorePosts();
-              } catch (_) {}
+              } catch (e) {
+                debugPrint('[HomeScreen] Error loading more: $e');
+              }
             }
           }
 
@@ -109,10 +113,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // story tab
             SliverToBoxAdapter(child: StoriesTray()),
-            Selector<FeedProvider, List<FeedPost>>(
-              selector: (context, feed) => feed.feedPosts,
-              builder: (context, feedPosts, _) {
-                final feed = context.read<FeedProvider>();
+            Consumer<FeedProvider>(
+              builder: (context, feed, _) {
                 if (feed.isLoading) {
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
@@ -122,7 +124,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 }
-
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {

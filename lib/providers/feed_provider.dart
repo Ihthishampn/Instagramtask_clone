@@ -5,7 +5,7 @@ import 'package:instagram_task_clone/repositories/post_repository.dart';
 
 class FeedProvider extends ChangeNotifier {
   final PostRepository _repository;
-  static const int _pageSize = 5;
+  static const int _pageSize = 10;
 
   FeedProvider(this._repository);
 
@@ -31,10 +31,15 @@ class FeedProvider extends ChangeNotifier {
 
     try {
       _allPosts = await _repository.fetchFeedPosts();
+      debugPrint('[FeedProvider] Total posts fetched: ${_allPosts.length}');
       _feedPosts = _allPosts.take(_pageSize).toList();
       _carouselPositions.clear();
       _hasMore = _allPosts.length > _pageSize;
-    } catch (_) {
+      debugPrint(
+        '[FeedProvider] Initial feed posts: ${_feedPosts.length}, hasMore: $_hasMore',
+      );
+    } catch (e) {
+      debugPrint('[FeedProvider] Error loading feed: $e');
       _allPosts = [];
       _feedPosts = [];
       _carouselPositions.clear();
@@ -51,14 +56,19 @@ class FeedProvider extends ChangeNotifier {
     _isLoadingMore = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 300));
 
     try {
       final currentCount = _feedPosts.length;
+      debugPrint(
+        '[FeedProvider] Loading more posts. Current: $currentCount, Total: ${_allPosts.length}',
+      );
       final newPosts = _allPosts.skip(currentCount).take(_pageSize).toList();
+      debugPrint('[FeedProvider] New posts loaded: ${newPosts.length}');
       _feedPosts.addAll(newPosts);
       _hasMore = _feedPosts.length < _allPosts.length;
-    } catch (_) {
+     
+    } catch (e) {
       _hasMore = false;
     }
 
