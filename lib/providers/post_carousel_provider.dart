@@ -41,9 +41,7 @@ class PostCarouselProvider extends ChangeNotifier {
 
     if (_isDisposed) return;
 
-    // Try to use a cached intrinsic size for the first image (prefetched
-    // during feed load). If available, compute a height from that aspect
-    // ratio so the carousel displays full-height images.
+    
     final first = images.isNotEmpty ? images.first : null;
     if (first != null) {
       final s = ImageSizeCache.instance.get(first);
@@ -55,17 +53,10 @@ class PostCarouselProvider extends ChangeNotifier {
       }
     }
 
-    // Fallback conservative estimate used if no cached size is available.
     _height = (screenWidth * 0.8).clamp(200.0, 500.0);
     notifyListeners();
   }
 
-  // _loadActualSizes intentionally retained but disabled: resolving image
-  // sizes and updating carousel heights after initial layout can cause
-  // mid-scroll relayouts which make the feed jump. Keep the conservative
-  // initial height estimate instead.
-
-  // Image size resolving is disabled to keep carousel height stable.
 
   @override
   void dispose() {

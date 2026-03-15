@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 
-/// Singleton cache for intrinsic image sizes keyed by URL.
 class ImageSizeCache {
   ImageSizeCache._();
   static final ImageSizeCache instance = ImageSizeCache._();
@@ -10,13 +9,17 @@ class ImageSizeCache {
 
   Size? get(String url) => _cache[url];
 
-  /// Prefetch intrinsic sizes for the provided URLs.
-  /// This resolves each image via [ImageProvider] and stores its width/height.
+
   Future<void> prefetch(List<String> urls) async {
     final unique = urls.where((u) => u.isNotEmpty).toSet().toList();
+
+    final tasks = <Future<void>>[];
     for (final url in unique) {
       if (_cache.containsKey(url)) continue;
-      await _resolveAndStore(url);
+      tasks.add(_resolveAndStore(url));
+    }
+    if (tasks.isNotEmpty) {
+      await Future.wait(tasks);
     }
   }
 
@@ -50,7 +53,7 @@ class ImageSizeCache {
       stream.addListener(listener);
       await completer.future;
     } catch (_) {
-      // ignore
+      //
     }
   }
 }

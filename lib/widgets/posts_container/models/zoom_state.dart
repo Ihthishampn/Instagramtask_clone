@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Immutable state class representing the current zoom state of an image.
 @immutable
 class ZoomState {
   final double scale;

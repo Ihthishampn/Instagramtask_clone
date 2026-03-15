@@ -6,12 +6,14 @@ class ActionIcon extends StatelessWidget {
   final num count;
   final Color? color;
   final VoidCallback onTap;
+  final double rotateAngle;
 
   const ActionIcon({
     required this.icon,
     required this.count,
     required this.onTap,
     this.color,
+    this.rotateAngle = 0.0,
     super.key,
   });
 
@@ -32,7 +34,12 @@ class ActionIcon extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(icon, size: 26, color: color ?? Colors.white),
+          rotateAngle != 0.0
+              ? Transform.rotate(
+                  angle: rotateAngle,
+                  child: Icon(icon, size: 26, color: color ?? Colors.white),
+                )
+              : Icon(icon, size: 26, color: color ?? Colors.white),
           const SizedBox(width: 4),
           Text(
             _formatCount(count),
@@ -62,7 +69,7 @@ class IGIconButton extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-        child: Icon(icon, size: 26, color: color),
+        child: Icon(icon, size: 28, color: color),
       ),
     );
   }

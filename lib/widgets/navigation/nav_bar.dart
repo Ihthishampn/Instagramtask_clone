@@ -7,33 +7,85 @@ class InstagramNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // use NavigationProvider in child items
-
-    return BottomAppBar(
-      color: Colors.black,
-      child: SizedBox(
-        height: 56,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _NavBarItem(
-              icon: Icons.home_rounded,
-              activeIcon: Icons.home,
-              index: 0,
-            ),
-            _NavBarItem(
-              icon: Icons.ondemand_video_rounded,
-              activeIcon: Icons.video_collection,
-              index: 1,
-            ),
-            // spacer for center FAB
-            _NavBarItem(icon: Icons.send, activeIcon: Icons.favorite, index: 3),
-            _NavBarItem(
-              icon: Icons.person_outline,
-              activeIcon: Icons.person,
-              index: 4,
-            ),
-          ],
+   
+    return SafeArea(
+      top: false,
+      child: Container(
+        color: const Color.fromARGB(220, 12, 12, 12),
+        child: SizedBox(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _NavBarItem(
+                icon: const Icon(
+                  Icons.home_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                activeIcon: const Icon(
+                  Icons.home,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                index: 0,
+              ),
+              _NavBarItem(
+                icon: const Icon(
+                  Icons.ondemand_video_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                activeIcon: const Icon(
+                  Icons.video_collection,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                index: 1,
+              ),
+              _NavBarItem(
+                icon: Transform.rotate(
+                  angle: -0.6,
+                  child: Transform.scale(
+                    scale: 0.92,
+                    child: const Icon(
+                      Icons.send_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ),
+                ),
+                activeIcon: const Icon(
+                  Icons.send_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                index: 2,
+              ),
+              _NavBarItem(
+                icon: const Icon(Icons.search, color: Colors.white, size: 26),
+                activeIcon: const Icon(
+                  Icons.search,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                index: 3,
+              ),
+              _NavBarItem(
+                icon: const Icon(
+                  Icons.account_circle,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                activeIcon: const Icon(
+                  Icons.account_circle,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                index: 4,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -41,8 +93,8 @@ class InstagramNavBar extends StatelessWidget {
 }
 
 class _NavBarItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
+  final Widget icon;
+  final Widget activeIcon;
   final int index;
   const _NavBarItem({
     required this.icon,
@@ -56,9 +108,13 @@ class _NavBarItem extends StatelessWidget {
     final current = context.watch<NavigationProvider>().currentIndex;
     final active = current == index;
 
+    final Widget toShow = active ? activeIcon : icon;
+
     return IconButton(
       onPressed: () => nav.setIndex(index),
-      icon: Icon(active ? activeIcon : icon, color: Colors.white),
+      icon: toShow,
+      splashRadius: 20,
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 40),
     );
   }
 }

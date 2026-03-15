@@ -28,7 +28,6 @@ class _PostContainerState extends State<PostContainer>
   @override
   void initState() {
     super.initState();
-    // Removed verbose init logging to avoid jank during fast scrolling.
     _heartAnimationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -74,6 +73,7 @@ class _PostContainerState extends State<PostContainer>
           mainAxisSize: MainAxisSize.min,
           children: [
             PostHeader(
+              userId: widget.post.user.id,
               username: widget.post.user.username,
               profileImageUrl: widget.post.user.profileImage,
               location: widget.post.post.location,

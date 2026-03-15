@@ -21,7 +21,7 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
 
   OverlayEntry? _entry;
   bool _overlayVisible = false;
-  bool _overlayLock = false; // prevents concurrent insert/remove races
+  bool _overlayLock = false; 
 
   final _zoomNotifier = ValueNotifier<ZoomState>(ZoomState.zero);
 
@@ -87,10 +87,7 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
   }
 
   void _startAutoDismissTimer() {
-    // Auto-dismiss intentionally disabled so users can keep the zoom
-    // overlay open indefinitely until they dismiss it manually.
-    // Previously this started a 1s timer; leaving this as a noop
-    // prevents the overlay from auto-closing.
+  
     return;
   }
 
@@ -141,14 +138,12 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
       return;
     }
 
-    // Dispose previous snapshot and keep reference for later disposal.
     _snapshot?.dispose();
     _snapshot = snap;
     _overlayVisible = true;
     _ctrl.reset();
 
-    // Capture into a local final so the overlay builder doesn't access
-    // the (nullable) field later — prevents null-check errors.
+
     final ui.Image snapshotForOverlay = snap;
 
     _entry = OverlayEntry(

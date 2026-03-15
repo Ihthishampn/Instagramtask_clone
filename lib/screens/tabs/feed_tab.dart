@@ -1,67 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:instagram_task_clone/widgets/refresh/instagram_refresh_indicator.dart';
+import 'package:instagram_task_clone/widgets/app_bar/my_icon_button.dart';
 import 'package:instagram_task_clone/core/constants/image.dart';
 import 'package:instagram_task_clone/core/constants/my_colors.dart';
-import 'package:instagram_task_clone/widgets/app_bar/my_icon_button.dart';
-import 'package:instagram_task_clone/widgets/posts_container/post_container.dart';
-import 'package:instagram_task_clone/widgets/posts_container/post_container_skeleton.dart';
 import 'package:instagram_task_clone/widgets/story_tray/stories_tray.dart';
 import 'package:instagram_task_clone/providers/feed_provider.dart';
 import 'package:instagram_task_clone/providers/stories_provider.dart';
+import 'package:instagram_task_clone/widgets/posts_container/post_container.dart';
+import 'package:instagram_task_clone/widgets/posts_container/post_container_skeleton.dart';
 import 'package:instagram_task_clone/model/feed_post_model.dart';
-import 'package:instagram_task_clone/widgets/refresh/instagram_refresh_indicator.dart';
-import 'package:provider/provider.dart';
-import 'package:instagram_task_clone/providers/navigation_provider.dart';
-import 'package:instagram_task_clone/widgets/navigation/nav_bar.dart';
-import 'package:instagram_task_clone/screens/tabs/placeholder_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class FeedTab extends StatefulWidget {
+  const FeedTab({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<FeedTab> createState() => _FeedTabState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _FeedTabState extends State<FeedTab> with AutomaticKeepAliveClientMixin {
   bool _isNearBottom = false;
-  final List<Widget> _pages = [];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_pages.isEmpty) {
-      _pages.add(_buildFeedPage());
-      _pages.add(const PlaceholderTab(title: 'Not completed'));
-      _pages.add(const PlaceholderTab(title: 'Not completed'));
-      _pages.add(const PlaceholderTab(title: 'Not completed'));
-      _pages.add(const PlaceholderTab(title: 'Not completed'));
-    }
-  }
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => NavigationProvider(),
-      child: Consumer<NavigationProvider>(
-        builder: (context, nav, _) {
-          final idx = nav.currentIndex;
-          final children = _pages.isNotEmpty
-              ? _pages
-              : [const SizedBox.shrink()];
-          final safeIndex = (idx >= 0 && idx < children.length) ? idx : 0;
-
-          return Scaffold(
-            body: SafeArea(
-              child: IndexedStack(index: safeIndex, children: children),
-            ),
-            bottomNavigationBar: const InstagramNavBar(),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFeedPage() {
+    super.build(context);
     final double width = MediaQuery.of(context).size.width;
+
     return InstagramRefreshIndicator(
       onRefresh: () async {
         final feedProv = context.read<FeedProvider>();
@@ -88,26 +55,15 @@ class _HomeScreenState extends State<HomeScreen> {
           return false;
         },
         child: CustomScrollView(
-          cacheExtent: 700,
           primary: true,
           slivers: [
             SliverAppBar(
               leading: MyIconButton(onpressed: () {}, icon: Icons.add),
               centerTitle: true,
-              title: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    logoImage,
-                    color: MyColors.logo,
-                    width: (width * 0.35).clamp(100, 200),
-                  ),
-                  const Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 25,
-                    color: Colors.white,
-                  ),
-                ],
+              title: Image.asset(
+                logoImage,
+                color: MyColors.logo,
+                width: (width * 0.35).clamp(100, 200),
               ),
               actions: [
                 MyIconButton(

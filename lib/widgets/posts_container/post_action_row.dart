@@ -13,7 +13,8 @@ class PostActionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+    
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Row(
         children: [
           Consumer<FeedProvider>(
@@ -41,9 +42,10 @@ class PostActionRow extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           ActionIcon(
-            icon: Icons.send_outlined,
+            icon: Icons.send_rounded,
             count: post.post.shareCount,
             onTap: () {},
+            rotateAngle: -0.7,
           ),
           const Spacer(),
           Consumer<FeedProvider>(
@@ -51,6 +53,7 @@ class PostActionRow extends StatelessWidget {
               final postData = post.post;
               return IGIconButton(
                 icon: postData.isSaved ? Icons.bookmark : Icons.bookmark_border,
+
                 color: Colors.white,
                 onTap: () => feed.toggleSave(index),
               );

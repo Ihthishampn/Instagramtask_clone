@@ -38,7 +38,7 @@ class _PostDetailsState extends State<PostDetails> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 1),
+        const SizedBox(height: 3),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: !_isExpanded && needsTruncation

@@ -10,7 +10,8 @@ class MyIconButton extends StatelessWidget {
     return IconButton(
       splashRadius: 7,
       onPressed: onpressed,
-      icon: Icon(icon, size: 25),
+      color: Colors.white,
+      icon: Icon(icon, size: 26),
     );
   }
 }

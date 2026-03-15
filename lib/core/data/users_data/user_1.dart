@@ -3,8 +3,10 @@ import 'package:instagram_task_clone/model/user_model.dart';
 
 UserModel userOne() {
   return UserModel(
+    storyWacthed: false,
+    storyImage: "https://i.pinimg.com/736x/4a/65/9f/4a659fec9df1da380bd43ee50133ca8b.jpg",
     id: 1,
-
+timeStoryPosted: Duration(hours: 2),
     profileImage:
         "https://i.pinimg.com/736x/60/a2/25/60a22527dab0ba99d3e79595b8255125.jpg",
     username: "Amii",
@@ -18,7 +20,7 @@ UserModel userOne() {
           "https://i.pinimg.com/736x/29/d7/86/29d78686ce8eb9fe3956ffe1d81210ba.jpg",
         ],
         caption: "Finally got my GT.A dream machine that excites every drive.Speed and style perfectly combined.Every ride feels like a thrilling race.Living the dream, one ride at a time.",
-        hashTag: ["#GT", "GT650", "Bike"],
+        hashTag: ["#GT", "#GT650", "#Bike"],
         shareCount: 1200,
         duration: Duration(hours: 3),
         isLiked: true,

@@ -25,8 +25,7 @@ class FeedProvider extends ChangeNotifier {
     try {
       _feedPosts = await _repository.fetchFeedPosts();
       _carouselPositions.clear();
-      // Prefetch intrinsic sizes for images in the first 20 posts so
-      // carousel heights can be computed before the UI is shown.
+  
       final urls = <String>[];
       for (var i = 0; i < _feedPosts.length && i < 20; i++) {
         final p = _feedPosts[i];
@@ -35,10 +34,25 @@ class FeedProvider extends ChangeNotifier {
         }
       }
       if (urls.isNotEmpty) {
-        // Ensure intrinsic sizes for the first posts are available before
-        // finishing the initial load so carousels can compute exact heights
-        // and avoid mid-scroll relayouts that crop or jump content.
-        await ImageSizeCache.instance.prefetch(urls);
+        final unique = urls.toSet().toList();
+        final firstBatch = <String>[];
+        for (var i = 0; i < _feedPosts.length && i < 3; i++) {
+          final p = _feedPosts[i];
+          if (p.post.image.isNotEmpty) firstBatch.add(p.post.image.first);
+        }
+        try {
+          if (firstBatch.isNotEmpty) {
+            await ImageSizeCache.instance.prefetch(firstBatch.toSet().toList());
+          }
+        } catch (_) {}
+
+        final remaining = unique
+            .where((u) => !firstBatch.contains(u))
+            .toSet()
+            .toList();
+        if (remaining.isNotEmpty) {
+          Future.microtask(() => ImageSizeCache.instance.prefetch(remaining));
+        }
       }
     } catch (_) {
       _feedPosts = [];
@@ -78,6 +92,8 @@ class FeedProvider extends ChangeNotifier {
 
   bool _isLoadingMore = false;
   bool get isLoadingMore => _isLoadingMore;
+  bool _hasMore = true;
+  bool get hasMore => _hasMore;
 
   Future<void> loadMorePosts() async {
     if (_isLoadingMore) return;
@@ -86,7 +102,11 @@ class FeedProvider extends ChangeNotifier {
 
     try {
       final morePosts = await _repository.fetchFeedPosts();
-      _feedPosts.addAll(morePosts);
+      if (morePosts.isEmpty) {
+        _hasMore = false;
+      } else {
+        _feedPosts.addAll(morePosts);
+      }
     } catch (_) {}
 
     _isLoadingMore = false;

@@ -14,6 +14,41 @@ class StoriesProvider extends ChangeNotifier {
   List<UserModel> _users = [];
   List<UserModel> get users => _users;
 
+
+  void markWatchedAndMoveToEnd(int userIndex) {
+    if (userIndex < 0 || userIndex >= _users.length) return;
+    final user = _users[userIndex];
+    if (!user.storyWacthed) {
+      user.storyWacthed = true;
+      _users.removeAt(userIndex);
+      _users.add(user);
+      notifyListeners();
+    }
+  }
+
+  void markWatched(int userIndex) {
+    if (userIndex < 0 || userIndex >= _users.length) return;
+    final user = _users[userIndex];
+    if (!user.storyWacthed) {
+      user.storyWacthed = true;
+      notifyListeners();
+    }
+  }
+
+  void moveWatchedToEndAll() {
+    final unwatched = <UserModel>[];
+    final watched = <UserModel>[];
+    for (final u in _users) {
+      if (u.storyWacthed) {
+        watched.add(u);
+      } else {
+        unwatched.add(u);
+      }
+    }
+    _users = [...unwatched, ...watched];
+    notifyListeners();
+  }
+
   Future<void> loadStories() async {
     _isLoading = true;
     notifyListeners();

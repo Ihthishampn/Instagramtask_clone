@@ -3,7 +3,10 @@ import 'package:instagram_task_clone/model/user_model.dart';
 
 UserModel userEight() {
   return UserModel(
+    storyImage: "https://i.pinimg.com/736x/d9/b9/3e/d9b93e22c142c8125b8a79f89cc0c108.jpg",
     id: 8,
+    storyWacthed: false,
+timeStoryPosted: Duration(hours: 18),
     profileImage: "https://i.pinimg.com/736x/2f/ef/2d/2fef2dd6fe75a96a6e8f74eaafe271b2.jpg",
     username: "Nazeel",
     posts: [

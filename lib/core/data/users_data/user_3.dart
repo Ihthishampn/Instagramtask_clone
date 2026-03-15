@@ -3,6 +3,10 @@ import 'package:instagram_task_clone/model/user_model.dart';
 
 UserModel userThree() {
   return UserModel(
+    storyWacthed: false,
+timeStoryPosted: Duration(hours: 5),
+
+    storyImage: "https://i.pinimg.com/736x/7d/ee/63/7dee63a895b97552b38b7ffa778b9fb9.jpg",
     id: 3,
     profileImage: "https://i.pinimg.com/736x/e1/f9/43/e1f9435da1048a60b800f4c71cc0b021.jpg",
     username: "Jaseel",

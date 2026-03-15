@@ -77,14 +77,30 @@ class _PostCarouselState extends State<PostCarousel>
       key: ValueKey('pinch_zoom_${widget.postIndex}_$url'),
       child: CachedNetworkImage(
         imageUrl: url,
-        fit: BoxFit.fitWidth,
-        alignment: Alignment.center,
-        placeholder: (context, url) => Container(color: Colors.black),
+        imageBuilder: (context, imageProvider) => Image(
+          image: imageProvider,
+          fit: BoxFit.fitWidth,
+          alignment: Alignment.center,
+          // lower filter quality for faster decode on first render
+          filterQuality: FilterQuality.low,
+        ),
+        progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+          child: SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(
+              value: downloadProgress.progress,
+              strokeWidth: 2.5,
+              color: Colors.white,
+            ),
+          ),
+        ),
         errorWidget: (context, url, error) => Container(
           color: Colors.black,
           alignment: Alignment.center,
           child: const Icon(Icons.broken_image, color: Colors.white),
         ),
+        fadeInDuration: const Duration(milliseconds: 220),
       ),
     );
   }
@@ -113,9 +129,12 @@ class _PostCarouselState extends State<PostCarousel>
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOut,
             alignment: Alignment.topCenter,
-            child: SizedBox(
-              height: height + (widget.images.length > 1 ? 40 : 0),
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
                     height: height,
@@ -133,36 +152,45 @@ class _PostCarouselState extends State<PostCarousel>
                       ),
                     ),
                   ),
-                  if (widget.images.length > 1)
-                    Consumer<FeedProvider>(
-                      builder: (context, feedProvider, _) {
-                        final cur = feedProvider.getCarouselPosition(
-                          widget.postIndex,
-                        );
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(widget.images.length, (i) {
-                              final active = cur == i;
-                              return Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                                width: active ? 7 : 5,
-                                height: active ? 7 : 5,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: active
-                                      ? const Color(0xFF3897F0)
-                                      : Colors.grey.shade600,
-                                ),
+                  if (widget.images.length > 1) ...[
+                  
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: SizedBox(
+                        height: 13,
+                        child: Center(
+                          child: Consumer<FeedProvider>(
+                            builder: (context, feedProvider, _) {
+                              final cur = feedProvider.getCarouselPosition(
+                                widget.postIndex,
                               );
-                            }),
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(widget.images.length, (
+                                  i,
+                                ) {
+                                  final active = cur == i;
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    width: active ? 7 : 5,
+                                    height: active ? 7 : 5,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: active
+                                          ? const Color(0xFF3897F0)
+                                          : Colors.grey.shade600,
+                                    ),
+                                  );
+                                }),
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
+                  ],
                 ],
               ),
             ),
