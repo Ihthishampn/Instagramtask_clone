@@ -2,16 +2,23 @@ import 'package:flutter/material.dart';
 
 import 'package:instagram_task_clone/model/feed_post_model.dart';
 import 'package:instagram_task_clone/repositories/post_repository.dart';
-import 'image_size_cache.dart';
 
 class FeedProvider extends ChangeNotifier {
   final PostRepository _repository;
+  static const int _pageSize = 5;
 
   FeedProvider(this._repository);
 
   bool _isLoading = true;
   bool get isLoading => _isLoading;
 
+  bool _isLoadingMore = false;
+  bool get isLoadingMore => _isLoadingMore;
+
+  bool _hasMore = true;
+  bool get hasMore => _hasMore;
+
+  List<FeedPost> _allPosts = [];
   List<FeedPost> _feedPosts = [];
   List<FeedPost> get feedPosts => _feedPosts;
 
@@ -23,43 +30,39 @@ class FeedProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _feedPosts = await _repository.fetchFeedPosts();
+      _allPosts = await _repository.fetchFeedPosts();
+      _feedPosts = _allPosts.take(_pageSize).toList();
       _carouselPositions.clear();
-  
-      final urls = <String>[];
-      for (var i = 0; i < _feedPosts.length && i < 20; i++) {
-        final p = _feedPosts[i];
-        for (final u in p.post.image) {
-          if (u.isNotEmpty) urls.add(u);
-        }
-      }
-      if (urls.isNotEmpty) {
-        final unique = urls.toSet().toList();
-        final firstBatch = <String>[];
-        for (var i = 0; i < _feedPosts.length && i < 3; i++) {
-          final p = _feedPosts[i];
-          if (p.post.image.isNotEmpty) firstBatch.add(p.post.image.first);
-        }
-        try {
-          if (firstBatch.isNotEmpty) {
-            await ImageSizeCache.instance.prefetch(firstBatch.toSet().toList());
-          }
-        } catch (_) {}
-
-        final remaining = unique
-            .where((u) => !firstBatch.contains(u))
-            .toSet()
-            .toList();
-        if (remaining.isNotEmpty) {
-          Future.microtask(() => ImageSizeCache.instance.prefetch(remaining));
-        }
-      }
+      _hasMore = _allPosts.length > _pageSize;
     } catch (_) {
+      _allPosts = [];
       _feedPosts = [];
       _carouselPositions.clear();
+      _hasMore = false;
     }
 
     _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> loadMorePosts() async {
+    if (_isLoadingMore || !_hasMore) return;
+
+    _isLoadingMore = true;
+    notifyListeners();
+
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    try {
+      final currentCount = _feedPosts.length;
+      final newPosts = _allPosts.skip(currentCount).take(_pageSize).toList();
+      _feedPosts.addAll(newPosts);
+      _hasMore = _feedPosts.length < _allPosts.length;
+    } catch (_) {
+      _hasMore = false;
+    }
+
+    _isLoadingMore = false;
     notifyListeners();
   }
 
@@ -88,29 +91,6 @@ class FeedProvider extends ChangeNotifier {
       post.isLiked = true;
       notifyListeners();
     }
-  }
-
-  bool _isLoadingMore = false;
-  bool get isLoadingMore => _isLoadingMore;
-  bool _hasMore = true;
-  bool get hasMore => _hasMore;
-
-  Future<void> loadMorePosts() async {
-    if (_isLoadingMore) return;
-    _isLoadingMore = true;
-    notifyListeners();
-
-    try {
-      final morePosts = await _repository.fetchFeedPosts();
-      if (morePosts.isEmpty) {
-        _hasMore = false;
-      } else {
-        _feedPosts.addAll(morePosts);
-      }
-    } catch (_) {}
-
-    _isLoadingMore = false;
-    notifyListeners();
   }
 
   void toggleSave(int index) {

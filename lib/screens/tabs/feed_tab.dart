@@ -7,8 +7,8 @@ import 'package:instagram_task_clone/core/constants/my_colors.dart';
 import 'package:instagram_task_clone/widgets/story_tray/stories_tray.dart';
 import 'package:instagram_task_clone/providers/feed_provider.dart';
 import 'package:instagram_task_clone/providers/stories_provider.dart';
-import 'package:instagram_task_clone/widgets/posts_container/post_container.dart';
-import 'package:instagram_task_clone/widgets/posts_container/post_container_skeleton.dart';
+import 'package:instagram_task_clone/widgets/posts_container/post/post_container.dart';
+import 'package:instagram_task_clone/widgets/posts_container/post/post_container_skeleton.dart';
 import 'package:instagram_task_clone/model/feed_post_model.dart';
 
 class FeedTab extends StatefulWidget {

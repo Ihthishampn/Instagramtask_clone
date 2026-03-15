@@ -3,9 +3,49 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/stories_provider.dart';
-import '../shared/profile_placeholder.dart';
-import '../story_tray/story_viewer.dart';
+import '../../../providers/stories_provider.dart';
+import '../../../core/shared/profile_placeholder.dart';
+import '../../story_tray/story_viewer.dart';
+import '../../shared/ring_decoration.dart';
+import 'post_more_sheet.dart';
+
+class _DelayedShimmerPlaceholder extends StatefulWidget {
+  final Duration delay;
+
+  const _DelayedShimmerPlaceholder({required this.delay});
+
+  @override
+  State<_DelayedShimmerPlaceholder> createState() =>
+      _DelayedShimmerPlaceholderState();
+}
+
+class _DelayedShimmerPlaceholderState
+    extends State<_DelayedShimmerPlaceholder> {
+  late Future<void> _delayFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _delayFuture = Future.delayed(widget.delay);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _delayFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey.shade900,
+            highlightColor: Colors.grey.shade700,
+            child: Container(color: Colors.black),
+          );
+        }
+        return Container(color: Colors.black);
+      },
+    );
+  }
+}
 
 class PostHeader extends StatelessWidget {
   final int userId;
@@ -29,7 +69,6 @@ class PostHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         children: [
-          // Avatar with optional story ring (gradient when unwatched)
           Builder(
             builder: (context) {
               final hasWatched = context.select<StoriesProvider, bool>(
@@ -57,64 +96,33 @@ class PostHeader extends StatelessWidget {
                         }
                       }
                     : null,
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  // outer gradient ring (thinner than default)
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: showStoryRing
-                        ? const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFFFEDA75),
-                              Color(0xFFFA7E1E),
-                              Color(0xFFD62976),
-                              Color(0xFF962FBF),
-                              Color(0xFF4F5BD5),
-                            ],
-                          )
-                        : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black,
-                    ),
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black,
-                      ),
-                      alignment: Alignment.center,
-                      child: ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: profileImageUrl,
-                          fit: BoxFit.cover,
+                child: RingDecoration(
+                  outerSize: 42,
+                  padding: 2,
+                  showGradient: showStoryRing,
+                  isYourStory: false,
+                  child: ClipOval(
+                    child: SizedBox(
+                      width: 34,
+                      height: 34,
+                      child: CachedNetworkImage(
+                        imageUrl: profileImageUrl,
+                        fit: BoxFit.cover,
+                        width: 34,
+                        height: 34,
+                        placeholder: (context, url) =>
+                            _DelayedShimmerPlaceholder(
+                              delay: const Duration(seconds: 2),
+                            ),
+                        errorWidget: (context, url, error) => Container(
                           width: 34,
                           height: 34,
-                          placeholder: (context, url) => Shimmer.fromColors(
-                            baseColor: Colors.grey.shade900,
-                            highlightColor: Colors.grey.shade700,
-                            child: Container(color: Colors.black),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            width: 34,
-                            height: 34,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Center(
-                              child: ProfilePlaceholder(size: 22),
-                            ),
+                          child: const Center(
+                            child: ProfilePlaceholder(size: 22),
                           ),
                         ),
                       ),
@@ -156,7 +164,15 @@ class PostHeader extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: onMoreTap,
+            onTap: () {
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => const PostMoreSheet(),
+              );
+              if (onMoreTap != null) onMoreTap!();
+            },
             child: const Padding(
               padding: EdgeInsets.all(4),
               child: Icon(Icons.more_vert, color: Colors.white, size: 20),

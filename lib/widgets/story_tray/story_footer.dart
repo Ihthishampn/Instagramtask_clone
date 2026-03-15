@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'story_constants.dart';
-import '../shared/ui_helpers.dart';
+import '../../core/shared/ui_helpers.dart';
 
 class StoryFooter extends StatelessWidget {
   final MediaQueryData mq;

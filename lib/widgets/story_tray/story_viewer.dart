@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/stories_provider.dart';
-import '../shared/ui_helpers.dart';
-import 'story_image.dart';
-import 'story_header.dart';
-import 'story_footer.dart';
-import 'story_touch_zones.dart';
+import '../../providers/story_viewer_provider.dart';
+import 'story_core.dart';
 
 class StoryViewer extends StatefulWidget {
   final int startIndex;
@@ -21,16 +18,16 @@ class _StoryViewerState extends State<StoryViewer>
     with SingleTickerProviderStateMixin {
   late PageController _pageController;
   late AnimationController _progressController;
-  static const Duration _storyDuration = Duration(seconds: 5);
+  static const Duration _storyDuration = Duration(seconds: 8);
 
-  int _currentIndex = 0;
+  late StoryViewerProvider _viewerProv;
   DateTime? _touchStart;
   static const Duration _tapThreshold = Duration(milliseconds: 180);
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.startIndex;
+    _viewerProv = StoryViewerProvider(widget.startIndex);
     _pageController = PageController(initialPage: widget.startIndex);
     _progressController =
         AnimationController(vsync: this, duration: _storyDuration)
@@ -42,7 +39,7 @@ class _StoryViewerState extends State<StoryViewer>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final prov = Provider.of<StoriesProvider>(context, listen: false);
-      prov.markWatched(_currentIndex);
+      prov.markWatched(_viewerProv.currentIndex);
       _progressController.forward(from: 0);
     });
   }
@@ -51,14 +48,17 @@ class _StoryViewerState extends State<StoryViewer>
   void dispose() {
     _pageController.dispose();
     _progressController.dispose();
+    try {
+      _viewerProv.dispose();
+    } catch (_) {}
     super.dispose();
   }
 
   void _advanceToNext() {
     final prov = Provider.of<StoriesProvider>(context, listen: false);
     final users = prov.users;
-    if (_currentIndex < users.length - 1) {
-      final next = _currentIndex + 1;
+    if (_viewerProv.currentIndex < users.length - 1) {
+      final next = _viewerProv.currentIndex + 1;
       _pageController.animateToPage(
         next,
         duration: const Duration(milliseconds: 250),
@@ -71,8 +71,8 @@ class _StoryViewerState extends State<StoryViewer>
   }
 
   void _goToPrev() {
-    if (_currentIndex > 0) {
-      final prev = _currentIndex - 1;
+    if (_viewerProv.currentIndex > 0) {
+      final prev = _viewerProv.currentIndex - 1;
       _pageController.animateToPage(
         prev,
         duration: const Duration(milliseconds: 250),
@@ -128,16 +128,8 @@ class _StoryViewerState extends State<StoryViewer>
     }
   }
 
-  String _formatTime(Duration d) {
-    if (d.inDays > 0) return '${d.inDays}d';
-    if (d.inHours > 0) return '${d.inHours}h';
-    if (d.inMinutes > 0) return '${d.inMinutes}m';
-    return 'now';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
     final prov = Provider.of<StoriesProvider>(context);
     final users = prov.users;
 
@@ -157,89 +149,33 @@ class _StoryViewerState extends State<StoryViewer>
       );
     }
 
-    final currentUser = users[_currentIndex];
-
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            itemCount: users.length,
-            physics: const NeverScrollableScrollPhysics(),
-            onPageChanged: (idx) {
-              setState(() => _currentIndex = idx);
-              prov.markWatched(idx);
-              _progressController.stop();
-              _progressController.reset();
-              _progressController.forward();
-            },
-            itemBuilder: (context, index) {
-              final u = users[index];
-              // compute height so the image bottom aligns with the top of the action bar
-              final availableHeight = computeAvailableHeight(mq);
-
-              return StoryImage(
-                imageUrl: u.storyImage,
-                availableHeight: availableHeight,
-                topPadding: mq.padding.top,
-              );
-            },
-          ),
-
-          StoryTouchZones(
-            onTouchDown: _handleTouchDown,
-            onLeftTapUp: _handleLeftTapUp,
-            onRightTapUp: _handleRightTapUp,
-            onTapCancel: _handleTouchCancel,
-          ),
-
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 200,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.black.withOpacity(0.55), Colors.transparent],
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 160,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black.withOpacity(0.55), Colors.transparent],
-                ),
-              ),
-            ),
-          ),
-
-          StoryHeader(
-            progressAnimation: _progressController,
-            currentUser: currentUser,
-            formatTime: _formatTime,
-          ),
-
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: StoryFooter(mq: mq, onSend: null),
-          ),
-        ],
+    return ChangeNotifierProvider.value(
+      value: _viewerProv,
+      child: StoryCore(
+        pageController: _pageController,
+        progressController: _progressController,
+        users: users,
+        currentIndex: _viewerProv.currentIndex,
+        onAdvanceToNext: _advanceToNext,
+        onGoToPrev: _goToPrev,
+        onTouchDown: _handleTouchDown,
+        onTouchCancel: _handleTouchCancel,
+        onLeftTapUp: _handleLeftTapUp,
+        onRightTapUp: _handleRightTapUp,
+        onPageChanged: (idx) {
+          _viewerProv.setCurrentIndex(idx);
+          final prov = Provider.of<StoriesProvider>(context, listen: false);
+          prov.markWatched(idx);
+          try {
+            _progressController.stop();
+          } catch (_) {}
+          try {
+            _progressController.reset();
+          } catch (_) {}
+          try {
+            _progressController.forward(from: 0);
+          } catch (_) {}
+        },
       ),
     );
   }

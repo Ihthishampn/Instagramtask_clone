@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:instagram_task_clone/core/constants/image.dart';
-import 'package:instagram_task_clone/core/constants/my_colors.dart';
-import 'package:instagram_task_clone/widgets/app_bar/my_icon_button.dart';
-import 'package:instagram_task_clone/widgets/posts_container/post_container.dart';
-import 'package:instagram_task_clone/widgets/posts_container/post_container_skeleton.dart';
+import 'package:instagram_task_clone/widgets/app_bar/ig_sliver_app_bar.dart';
+import 'package:instagram_task_clone/widgets/posts_container/post/post_container.dart';
+import 'package:instagram_task_clone/widgets/posts_container/post/post_container_skeleton.dart';
 import 'package:instagram_task_clone/widgets/story_tray/stories_tray.dart';
 import 'package:instagram_task_clone/providers/feed_provider.dart';
 import 'package:instagram_task_clone/providers/stories_provider.dart';
@@ -23,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isNearBottom = false;
+  double? _lastMaxScrollExtent;
   final List<Widget> _pages = [];
 
   @override
@@ -61,7 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFeedPage() {
-    final double width = MediaQuery.of(context).size.width;
     return InstagramRefreshIndicator(
       onRefresh: () async {
         final feedProv = context.read<FeedProvider>();
@@ -76,6 +74,22 @@ class _HomeScreenState extends State<HomeScreen> {
           final metrics = notification.metrics;
           final isNearBottom = metrics.pixels >= metrics.maxScrollExtent - 600;
 
+          final curMax = metrics.maxScrollExtent;
+          if (_lastMaxScrollExtent == null) {
+            _lastMaxScrollExtent = curMax;
+          } else {
+            final diff = (curMax - _lastMaxScrollExtent!).abs();
+            if (diff > 0.5) {
+              debugPrint(
+                '[feed] maxScrollExtent changed by ${diff.toStringAsFixed(1)} '
+                'during scroll. pixels=${metrics.pixels.toStringAsFixed(1)} '
+                'viewport=${metrics.viewportDimension.toStringAsFixed(1)} '
+                'min=${metrics.minScrollExtent.toStringAsFixed(1)}',
+              );
+              _lastMaxScrollExtent = curMax;
+            }
+          }
+
           if (isNearBottom != _isNearBottom) {
             _isNearBottom = isNearBottom;
             if (_isNearBottom) {
@@ -88,34 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
           return false;
         },
         child: CustomScrollView(
-          cacheExtent: 700,
+          cacheExtent: 300,
           primary: true,
           slivers: [
-            SliverAppBar(
-              leading: MyIconButton(onpressed: () {}, icon: Icons.add),
-              centerTitle: true,
-              title: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    logoImage,
-                    color: MyColors.logo,
-                    width: (width * 0.35).clamp(100, 200),
-                  ),
-                  const Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 25,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-              actions: [
-                MyIconButton(
-                  onpressed: () {},
-                  icon: Icons.favorite_border_outlined,
-                ),
-              ],
-            ),
+            const IgSliverAppBar(),
 
             // story tab
             SliverToBoxAdapter(child: StoriesTray()),

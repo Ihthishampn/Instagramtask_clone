@@ -48,6 +48,9 @@ class _PostContainerState extends State<PostContainer>
     );
   }
 
+  final GlobalKey _containerKey = GlobalKey();
+  double? _lastReportedHeight;
+
   @override
   void dispose() {
     _heartAnimationController.dispose();
@@ -67,6 +70,7 @@ class _PostContainerState extends State<PostContainer>
           ToggleChangeProvider()
             ..setAnimationController(_heartAnimationController),
       child: Container(
+        key: _containerKey,
         color: Colors.black,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,5 +123,27 @@ class _PostContainerState extends State<PostContainer>
         ),
       ),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+   
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        final ctx = _containerKey.currentContext;
+        if (ctx == null) return;
+        final size = ctx.size;
+        if (size == null) return;
+        if (_lastReportedHeight == null ||
+            (_lastReportedHeight! - size.height).abs() > 1.0) {
+          _lastReportedHeight = size.height;
+          debugPrint('[feed-size] post ${widget.index} height=${size.height}');
+        }
+      } catch (e) {
+        // 
+      }
+    });
   }
 }

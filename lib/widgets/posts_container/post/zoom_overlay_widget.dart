@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
-import '../models/zoom_state.dart';
+import '../../../model/zoom_state_model.dart';
 
 
 class ZoomOverlayWidget extends StatelessWidget {

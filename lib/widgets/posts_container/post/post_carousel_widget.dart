@@ -39,14 +39,6 @@ class _PostCarouselState extends State<PostCarousel>
       widget.postIndex,
     );
     _pageController ??= PageController(initialPage: initialPage);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final w = MediaQuery.of(context).size.width;
-        _lastScreenWidth = w;
-        _provider?.ensureSizeFor(w);
-      }
-    });
   }
 
   @override
@@ -55,13 +47,6 @@ class _PostCarouselState extends State<PostCarousel>
     if (widget.images != old.images) {
       _provider?.dispose();
       _provider = PostCarouselProvider(widget.images);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final w = MediaQuery.of(context).size.width;
-          _lastScreenWidth = w;
-          _provider?.ensureSizeFor(w);
-        }
-      });
     }
   }
 
@@ -79,9 +64,8 @@ class _PostCarouselState extends State<PostCarousel>
         imageUrl: url,
         imageBuilder: (context, imageProvider) => Image(
           image: imageProvider,
-          fit: BoxFit.fitWidth,
+          fit: BoxFit.cover,
           alignment: Alignment.center,
-          // lower filter quality for faster decode on first render
           filterQuality: FilterQuality.low,
         ),
         progressIndicatorBuilder: (context, url, downloadProgress) => Center(
@@ -121,45 +105,34 @@ class _PostCarouselState extends State<PostCarousel>
       value: _provider!,
       child: Consumer<PostCarouselProvider>(
         builder: (context, provider, _) {
-          final height = provider.hasComputedSize
-              ? provider.height
-              : screenWidth * 0.8;
-
-          return AnimatedSize(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-            alignment: Alignment.topCenter,
-            child: AnimatedSize(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              alignment: Alignment.topCenter,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
+          final height = (screenWidth * 1.25).clamp(300.0, 900.0);
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: height,
+                child: PageView.builder(
+                  controller: _pageController,
+                  physics: const _FeedFriendlyPagePhysics(),
+                  onPageChanged: (page) => context
+                      .read<FeedProvider>()
+                      .setCarouselPosition(widget.postIndex, page),
+                  itemCount: widget.images.length,
+                  itemBuilder: (context, index) => SizedBox(
+                    width: screenWidth,
                     height: height,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      physics: const _FeedFriendlyPagePhysics(),
-                      onPageChanged: (page) => context
-                          .read<FeedProvider>()
-                          .setCarouselPosition(widget.postIndex, page),
-                      itemCount: widget.images.length,
-                      itemBuilder: (context, index) => SizedBox(
-                        width: screenWidth,
-                        height: height,
-                        child: _buildImage(widget.images[index]),
-                      ),
-                    ),
+                    child: _buildImage(widget.images[index]),
                   ),
-                  if (widget.images.length > 1) ...[
-                  
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: SizedBox(
-                        height: 13,
-                        child: Center(
-                          child: Consumer<FeedProvider>(
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: SizedBox(
+                  height: 13,
+                  child: Center(
+                    child: widget.images.length > 1
+                        ? Consumer<FeedProvider>(
                             builder: (context, feedProvider, _) {
                               final cur = feedProvider.getCarouselPosition(
                                 widget.postIndex,
@@ -186,14 +159,12 @@ class _PostCarouselState extends State<PostCarousel>
                                 }),
                               );
                             },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ),
               ),
-            ),
+            ],
           );
         },
       ),

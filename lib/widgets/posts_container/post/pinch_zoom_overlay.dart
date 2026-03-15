@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../gestures/smart_scale_recognizer.dart';
-import '../models/zoom_state.dart';
+import '../../../model/zoom_state_model.dart';
 import 'zoom_overlay_widget.dart';
 
 class PinchZoomOverlay extends StatefulWidget {
@@ -21,7 +21,7 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
 
   OverlayEntry? _entry;
   bool _overlayVisible = false;
-  bool _overlayLock = false; 
+  bool _overlayLock = false;
 
   final _zoomNotifier = ValueNotifier<ZoomState>(ZoomState.zero);
 
@@ -87,7 +87,6 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
   }
 
   void _startAutoDismissTimer() {
-  
     return;
   }
 
@@ -142,7 +141,6 @@ class _PinchZoomOverlayState extends State<PinchZoomOverlay>
     _snapshot = snap;
     _overlayVisible = true;
     _ctrl.reset();
-
 
     final ui.Image snapshotForOverlay = snap;
 

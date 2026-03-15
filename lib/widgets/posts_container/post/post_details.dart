@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram_task_clone/model/feed_post_model.dart';
+import 'package:instagram_task_clone/core/shared/ui_helpers.dart';
 
 class PostDetails extends StatefulWidget {
   final FeedPost post;
@@ -15,16 +16,8 @@ class _PostDetailsState extends State<PostDetails> {
   bool _isExpanded = false;
 
   String _timeAgo(Duration duration) {
-    if (duration.inDays > 0) {
-      return "${duration.inDays}d ago";
-    }
-    if (duration.inHours > 0) {
-      return "${duration.inHours}h ago";
-    }
-    if (duration.inMinutes > 0) {
-      return "${duration.inMinutes}m ago";
-    }
-    return "Just now";
+    final s = formatRelativeTime(duration);
+    return s == 'now' ? 'Just now' : '$s ago';
   }
 
   @override

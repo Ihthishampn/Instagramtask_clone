@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/navigation_provider.dart';
+import 'package:instagram_task_clone/widgets/navigation/nav_item.dart';
+
 
 class InstagramNavBar extends StatelessWidget {
   const InstagramNavBar({super.key});
@@ -17,7 +17,7 @@ class InstagramNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _NavBarItem(
+              NavBarItem(
                 icon: const Icon(
                   Icons.home_rounded,
                   color: Colors.white,
@@ -30,7 +30,7 @@ class InstagramNavBar extends StatelessWidget {
                 ),
                 index: 0,
               ),
-              _NavBarItem(
+              NavBarItem(
                 icon: const Icon(
                   Icons.ondemand_video_rounded,
                   color: Colors.white,
@@ -43,7 +43,7 @@ class InstagramNavBar extends StatelessWidget {
                 ),
                 index: 1,
               ),
-              _NavBarItem(
+              NavBarItem(
                 icon: Transform.rotate(
                   angle: -0.6,
                   child: Transform.scale(
@@ -62,7 +62,7 @@ class InstagramNavBar extends StatelessWidget {
                 ),
                 index: 2,
               ),
-              _NavBarItem(
+              NavBarItem(
                 icon: const Icon(Icons.search, color: Colors.white, size: 26),
                 activeIcon: const Icon(
                   Icons.search,
@@ -71,7 +71,7 @@ class InstagramNavBar extends StatelessWidget {
                 ),
                 index: 3,
               ),
-              _NavBarItem(
+              NavBarItem(
                 icon: const Icon(
                   Icons.account_circle,
                   color: Colors.white,
@@ -88,33 +88,6 @@ class InstagramNavBar extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _NavBarItem extends StatelessWidget {
-  final Widget icon;
-  final Widget activeIcon;
-  final int index;
-  const _NavBarItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.index,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final nav = context.read<NavigationProvider>();
-    final current = context.watch<NavigationProvider>().currentIndex;
-    final active = current == index;
-
-    final Widget toShow = active ? activeIcon : icon;
-
-    return IconButton(
-      onPressed: () => nav.setIndex(index),
-      icon: toShow,
-      splashRadius: 20,
-      constraints: const BoxConstraints(minWidth: 44, minHeight: 40),
     );
   }
 }

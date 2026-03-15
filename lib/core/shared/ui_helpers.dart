@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../story_tray/story_constants.dart';
+import '../../widgets/story_tray/story_constants.dart';
 
 String formatRelativeTime(Duration d) {
   if (d.inDays > 0) return '${d.inDays}d';

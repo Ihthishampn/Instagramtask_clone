@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:instagram_task_clone/model/feed_post_model.dart';
 import 'package:instagram_task_clone/providers/feed_provider.dart';
-import 'package:instagram_task_clone/widgets/posts_container/post_container_actions.dart';
+import 'package:instagram_task_clone/widgets/posts_container/post/post_container_actions.dart';
 import 'package:provider/provider.dart';
 
 class PostActionRow extends StatelessWidget {
@@ -13,7 +13,6 @@ class PostActionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-    
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Row(
         children: [
