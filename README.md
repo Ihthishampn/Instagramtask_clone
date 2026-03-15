@@ -5,6 +5,7 @@ A Flutter Project implementation of Instagram's Home Feed and Stories UX. This p
 ## Links
 
 GitHub Repository:      [https://github.com/Ihthishampn/Instagramtask_clone]
+
 Demo Recording (Loom):  [https://www.loom.com/share/edc55dccebf1448a82f5cab14efc0efe]
 
 
