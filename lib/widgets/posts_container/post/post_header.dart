@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:provider/provider.dart';
+import '../../../core/cache/custom_cache_manager.dart';
 
 import '../../../providers/stories_provider.dart';
 import '../../../core/shared/profile_placeholder.dart';
@@ -107,6 +108,7 @@ class PostHeader extends StatelessWidget {
                       height: 34,
                       child: CachedNetworkImage(
                         imageUrl: profileImageUrl,
+                        cacheManager: AppCacheManager.instance,
                         fit: BoxFit.cover,
                         width: 34,
                         height: 34,

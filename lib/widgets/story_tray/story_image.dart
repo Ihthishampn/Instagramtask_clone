@@ -46,12 +46,14 @@ class StoryImage extends StatelessWidget {
   final String imageUrl;
   final double availableHeight;
   final double topPadding;
+  final bool immediateLoadingIndicator;
 
   const StoryImage({
     super.key,
     required this.imageUrl,
     required this.availableHeight,
     required this.topPadding,
+    this.immediateLoadingIndicator = false,
   });
 
   @override
@@ -69,8 +71,19 @@ class StoryImage extends StatelessWidget {
               imageUrl: imageUrl,
               fit: BoxFit.cover,
               alignment: Alignment.topCenter,
-              placeholder: (c, url) =>
-                  _DelayedShimmerPlaceholder(delay: const Duration(seconds: 2)),
+              placeholder: (c, url) {
+                if (immediateLoadingIndicator) {
+                  return Container(
+                    color: Colors.grey[900],
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  );
+                }
+                return _DelayedShimmerPlaceholder(
+                  delay: const Duration(seconds: 2),
+                );
+              },
               errorWidget: (c, url, e) => Container(
                 color: Colors.grey[900],
                 child: const Center(

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../core/cache/custom_cache_manager.dart';
 
 import 'story_constants.dart';
 
@@ -59,6 +60,7 @@ class StoryHeader extends StatelessWidget {
                   child: ClipOval(
                     child: CachedNetworkImage(
                       imageUrl: currentUser.profileImage,
+                      cacheManager: AppCacheManager.instance,
                       fit: BoxFit.cover,
                       errorWidget: (c, u, e) => Container(
                         color: Colors.grey,

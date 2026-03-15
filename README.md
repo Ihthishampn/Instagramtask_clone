@@ -56,6 +56,8 @@ lib/
 │   ├── shared/
 │   │   ├── ui_helpers.dart                    # Shared utility functions
 │   │   └── profile_placeholder.dart           # Default avatar widget
+│   ├── cache/
+│   │   └── custom_cache_manager.dart          # Centralized cache manager (disk/memory policy)
 │   └── data/
 │       ├── users/users.dart                   # Centralized users list
 │       └── users_data/
@@ -147,17 +149,42 @@ lib/
 
 ### Post Item
 - **Header** — user avatar (tappable to open story), username, verified badge, location, more-vert icon.
+
 - **Carousel** — multi-image or single image; swipeable; dot indicators show current page.
 - **Double-tap heart** — triggers heart animation and marks post as liked.
 - **Action Row** — like, comment, share, save; some show toast/snackbar on tap.
 - **More Menu** — bottom sheet with Save, QR Code, Add to Favorites, Unfollow, Why Seeing, Hide, About Account, Report.
 - **Details** — caption (expandable if long), hashtags, timestamp, "See translation" link.
 
-### Image Loading
-- `CachedNetworkImage` with shimmer placeholder (2-second delay before showing).
-- Circular progress indicator during download.
-- Error widget shows broken-image icon.
-- Pinch-to-zoom overlay for full-screen image viewing.
+### Image Loading & Memory Management
+
+High-resolution network images are handled efficiently using `cached_network_image`.  
+This allows asynchronous loading, disk caching, and placeholder support while images download.
+
+A centralized cache manager is used across the application to keep caching behavior consistent.  
+This avoids scattered caching rules and helps control how long images stay in the cache and how many images are stored.
+
+Different image types are treated differently:
+- **Avatars and story thumbnails** are small images and are lightweight.
+- **Post and carousel images** are larger and may be removed from cache sooner to avoid unnecessary storage usage.
+
+To reduce memory consumption, images are decoded close to their display size whenever possible instead of loading very large originals into memory.
+
+Cache behavior is controlled through limits on stored objects and expiration time, ensuring old or unused images are automatically removed.
+
+Best practices followed in this implementation:
+- Prefer requesting properly sized images from the server.
+- Avoid storing extremely large original images when not required.
+- Keep caching centralized for easier maintenance.
+
+For better user experience:
+- **Shimmer placeholders** (with a short delay) appear while images load.
+- **Progress indicators** show loading status.
+- **Error widgets** display a fallback icon if an image fails to load.
+
+The **pinch-to-zoom viewer** reuses the same cached image provider, allowing full-screen viewing without downloading the image again.
+
+See `lib/core/cache/custom_cache_manager.dart` for the concrete cache settings used in this project and change them there if you need different limits.
 
 ---
 
@@ -232,5 +259,3 @@ For issues, suggestions:
 - GitHub: [Ihthishampn](https://github.com/Ihthishampn)
 
 ---
-
-**Happy coding!** 🚀

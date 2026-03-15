@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/shared/profile_placeholder.dart';
+import '../../core/cache/custom_cache_manager.dart';
 
 class AvatarImage extends StatelessWidget {
   final double width;
@@ -37,6 +38,7 @@ class AvatarImage extends StatelessWidget {
               )
             : CachedNetworkImage(
                 imageUrl: imageUrl!,
+                cacheManager: AppCacheManager.instance,
                 fit: BoxFit.cover,
                 width: width,
                 height: height,

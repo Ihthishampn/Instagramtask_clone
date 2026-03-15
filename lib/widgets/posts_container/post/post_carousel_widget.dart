@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../providers/post_carousel_provider.dart';
 import '../../../providers/feed_provider.dart';
+import '../../../core/cache/custom_cache_manager.dart';
 import 'pinch_zoom_overlay.dart';
 
 class PostCarousel extends StatefulWidget {
@@ -62,8 +63,12 @@ class _PostCarouselState extends State<PostCarousel>
       key: ValueKey('pinch_zoom_${widget.postIndex}_$url'),
       child: CachedNetworkImage(
         imageUrl: url,
+        cacheManager: AppCacheManager.instance,
         imageBuilder: (context, imageProvider) => Image(
-          image: imageProvider,
+          image: CachedNetworkImageProvider(
+            url,
+            cacheManager: AppCacheManager.instance,
+          ),
           fit: BoxFit.cover,
           alignment: Alignment.center,
           filterQuality: FilterQuality.low,

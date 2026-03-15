@@ -60,6 +60,7 @@ class StoryCore extends StatelessWidget {
                 imageUrl: u.storyImage,
                 availableHeight: availableHeight,
                 topPadding: mq.padding.top,
+                immediateLoadingIndicator: true,
               );
             },
           ),
